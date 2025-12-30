@@ -72,7 +72,7 @@ function logout() {
 // Load all orders
 async function loadOrders() {
   try {
-    const res = await fetch("http://localhost:5000/api/admin/order/all", {
+    const res = await fetch("https://<your-render-app-name>.onrender.com/api/admin/order/all", {
       headers: { Authorization: `Bearer ${token}` }
     });
     const data = await res.json();
