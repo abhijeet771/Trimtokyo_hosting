@@ -50,7 +50,7 @@ function logout(){ localStorage.removeItem("token"); localStorage.removeItem("us
 
 async function loadCart(){
 try{
-  const res = await fetch("http://localhost:5000/api/cart",{ headers:{ Authorization:`Bearer ${token}`}});
+  const res = await fetch("https://trimtokyo-hosting-1.onrender.com/api/cart",{ headers:{ Authorization:`Bearer ${token}`}});
   const data = await res.json();
   const container=document.getElementById("cart-list");
   if(!res.ok){ container.innerHTML=`<p class="no-data">${data.message}</p>`; return; }
@@ -61,7 +61,7 @@ try{
 
 async function removeFromCart(cartId){
 try{
-  const res = await fetch(`http://localhost:5000/api/cart/${cartId}`,{ method:"DELETE", headers:{ Authorization:`Bearer ${token}`}});
+  const res = await fetch(`https://trimtokyo-hosting-1.onrender.com/cart/${cartId}`,{ method:"DELETE", headers:{ Authorization:`Bearer ${token}`}});
   const data = await res.json(); alert(data.message); loadCart();
 }catch(err){ console.error(err); alert("Failed to remove item."); }
 }
@@ -71,7 +71,7 @@ loadCart();
 // Buy Now COD
 document.getElementById("buy-now-btn").addEventListener("click", async ()=>{
   try{
-    const res = await fetch("http://localhost:5000/api/order/place",{ method:"POST", headers:{ Authorization:`Bearer ${token}`}});
+    const res = await fetch("https://trimtokyo-hosting-1.onrender.com/api/order/place",{ method:"POST", headers:{ Authorization:`Bearer ${token}`}});
     const data = await res.json();
     if(!res.ok){ return alert(data.message || "Order failed"); }
     const anim=document.getElementById("order-animation");
