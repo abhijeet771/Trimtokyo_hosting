@@ -1,4 +1,4 @@
-const backendURL = "https://trimtokyo-hosting-1.onrender.com";
+const backendURL = "https://trimtokyo-hosting-0.onrender.com";
 
 // Load user info and bookings when page loads
 document.addEventListener("DOMContentLoaded", () => {
