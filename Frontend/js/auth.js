@@ -1,8 +1,5 @@
-const backendURL = "http://localhost:5000/api";
+const backendURL = "https://trimtokyo-hosting-1.onrender.com";
 
-/* ============================
-   REGISTER
-============================ */
 async function registerUser(event) {
   event.preventDefault();
 
