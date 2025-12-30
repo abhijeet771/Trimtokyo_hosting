@@ -1,18 +1,21 @@
 const backendURL = "https://trimtokyo-hosting-0.onrender.com";
 
+/* ============================
+   REGISTER
+============================ */
 async function registerUser(event) {
   event.preventDefault();
 
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value.trim();
-  const role = document.getElementById("role").value;   // FIXED
+  const role = document.getElementById("role").value;
   const errorMsg = document.getElementById("error-msg");
 
-  errorMsg.textContent = ""; // reset
+  errorMsg.textContent = "";
 
   try {
-    const res = await fetch(`${backendURL}/auth/register`, {
+    const res = await fetch(`${backendURL}/api/auth/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password, role }),
@@ -34,9 +37,6 @@ async function registerUser(event) {
   }
 }
 
-/* ============================
-   LOGIN
-============================ */
 async function loginUser(event) {
   event.preventDefault();
 
@@ -44,7 +44,7 @@ async function loginUser(event) {
   const password = document.getElementById("password").value.trim();
 
   try {
-    const res = await fetch(`${backendURL}/auth/login`, {
+    const res = await fetch(`${backendURL}/api/auth/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -57,13 +57,11 @@ async function loginUser(event) {
       return;
     }
 
-    // save login state
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.role);
 
     alert("Login successful!");
 
-    // redirect based on role
     if (data.role === "admin") {
       window.location.href = "dashboard_admin.html";
     } else if (data.role === "barber") {
@@ -77,4 +75,3 @@ async function loginUser(event) {
     alert("Server error during login.");
   }
 }
-s
