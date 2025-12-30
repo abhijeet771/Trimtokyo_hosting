@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api";
+const API_BASE = "https://trimtokyo-hosting-1.onrender.com";
 
 export const apiRequest = async (endpoint, method = "GET", data = null, token = null) => {
   const headers = { "Content-Type": "application/json" };
