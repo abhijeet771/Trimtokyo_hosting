@@ -15,7 +15,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:3000",
-      "https://YOUR_FRONTEND.vercel.app"
+      "https://frontend-phi-eight-93.vercel.app"
     ],
     credentials: true
   })
