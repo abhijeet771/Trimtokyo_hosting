@@ -57,7 +57,7 @@ async function loginUser(event) {
   const errorMsg = document.getElementById("error-msg");
 
   try {
-    const res = await fetch(""https://https://trimtokyo-hosting-0.onrender.com//api/admin/order/all"", {
+    const res = await fetch("https://https://trimtokyo-hosting-0.onrender.com//api/admin/order/all", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password })
