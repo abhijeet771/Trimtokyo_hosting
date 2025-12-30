@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrimTokyo | Book Your Barber</title>
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background: linear-gradient(to bottom,#d7fbe8 0%,#fefefe 50%,#fddde6 100%);
+      font-family:'Roboto Slab',Arial,sans-serif; color:#000;
+    }
+    header { display:flex; justify-content:space-between; align-items:center;
+      background:#fff; padding:15px 40px; box-shadow:0 2px 5px rgba(0,0,0,0.1); position:sticky; top:0; z-index:10; }
+    .location{font-weight:600;font-size:1.1em;}
+    .search-bar input{padding:8px 15px;border-radius:20px;border:1px solid #ccc;width:250px;outline:none;}
+    .actions button{padding:8px 16px;border:none;border-radius:20px;background:#222;color:white;cursor:pointer;font-weight:bold; transition:.3s;}
+    .actions button:hover{background:#444;}
+    .genres{display:flex;justify-content:center;flex-wrap:wrap;gap:15px;padding:25px 0;background:#f9f9f9;}
+    .genre{background:#fff;padding:10px 20px;border-radius:20px;border:1px solid #ccc;cursor:pointer;}
+    .genre:hover{background:#000;color:#fff;transform:scale(1.05);}
+    .card-section{display:grid;grid-template-columns:repeat(4,1fr);gap:25px;padding:40px;}
+    .card{background:#fff;border-radius:15px;box-shadow:0 2px 8px rgba(0,0,0,0.1);overflow:hidden;text-align:center;transition:transform .3s;}
+    .card:hover{transform:translateY(-5px);}
+    .card img{width:100%;height:180px;object-fit:cover;}
+    .card-content{padding:15px;}
+    .card-content h3{margin:8px 0;font-size:1.2em;}
+    .card-content p{font-size:.9em;color:#555;margin-bottom:10px;}
+    .book-btn{background:#000;color:white;border:none;padding:8px 14px;border-radius:20px;cursor:pointer;}
+    .book-btn:hover{background:#333;}
+    footer{text-align:center;padding:10px;background-color:#28a99e;font-size:.9em;}
+    @media(max-width:992px){.card-section{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:600px){.card-section{grid-template-columns:1fr;} header{flex-direction:column;gap:10px;}}
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="location">📍 Location: Mumbai, India</div>
+  <div class="search-bar"><input type="text" placeholder="Search for barbers or services..." /></div>
+  <div class="actions">
+    <button onclick="window.location.href='home.html'">Homepage</button>
+    <button onclick="window.location.href='login.html'">Sign In</button>
+    <button onclick="window.location.href='user-dashboard.html'">🛒 Cart</button>
+  </div>
+</header>
+
+<section class="genres">
+  <div class="genre">Haircut</div>
+  <div class="genre">Beard Trim</div>
+  <div class="genre">Facial</div>
+  <div class="genre">Massage</div>
+  <div class="genre">Hair Coloring</div>
+  <div class="genre">Spa</div>
+</section>
+
+<section class="card-section" id="card-section"></section>
+
+<footer>© Copyright TrimTokyo</footer>
+
+<script>
+  const barbers = [
+    { id: "64a9f0c0d0c9e1a1b2c3d4e1", name: "Classic Cut Studio", desc: "Top-rated stylists for men and women.", price: 199, img: "https://picsum.photos/seed/barber1/600/400" },
+    { id: "64a9f0c0d0c9e1a1b2c3d4e2", name: "Urban Edge Salon", desc: "Trendy haircuts and premium beard styling.", price: 199, img: "https://picsum.photos/seed/barber2/600/400" },
+    { id: "64a9f0c0d0c9e1a1b2c3d4e3", name: "Royal Blades", desc: "Luxury grooming experience for modern men.", price: 199, img: "https://picsum.photos/seed/barber3/600/400" },
+    { id: "64a9f0c0d0c9e1a1b2c3d4e4", name: "The Trim House", desc: "Affordable and stylish trims for everyone.", price: 199, img: "https://picsum.photos/seed/barber4/600/400" }
+  ];
+
+  const cardSection = document.getElementById("card-section");
+  barbers.forEach(b => {
+    const card = document.createElement("div");
+    card.className = "card";
+    card.innerHTML = `
+      <img src="${b.img}" alt="${b.name}" />
+      <div class="card-content">
+        <h3>${b.name}</h3>
+        <p>${b.desc}</p>
+        <button class="book-btn" onclick="bookNow('${b.id}', '${b.name}', ${b.price})">Book Now</button>
+      </div>
+    `;
+    cardSection.appendChild(card);
+  });
+
+  async function bookNow(serviceId, serviceName, price) {
+    const token = localStorage.getItem("token");
+    if (!token) { alert("Please login first!"); window.location.href = "login.html"; return; }
+
+    try {
+      const res = await fetch("http://localhost:5000/api/cart/add", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ serviceId, serviceName, price })
+      });
+      const data = await res.json();
+      alert(res.ok ? "Added to cart: " + serviceName : data.message || "Error adding to cart");
+    } catch (err) { console.error(err); alert("Server error. Check console."); }
+  }
+</script>
+
+</body>
+</html>
