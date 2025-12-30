@@ -1,4 +1,4 @@
-const backendURL = "https://trimtokyo-hosting-1.onrender.com";
+const backendURL = "https://trimtokyo-hosting-0.onrender.com";
 
 async function registerUser(event) {
   event.preventDefault();
