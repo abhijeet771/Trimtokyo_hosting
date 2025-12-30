@@ -1,4 +1,4 @@
-const backendURL = "http://localhost:5000/api";
+const backendURL = "https://trimtokyo-hosting-1.onrender.com";
 
 // Load user info and bookings when page loads
 document.addEventListener("DOMContentLoaded", () => {
