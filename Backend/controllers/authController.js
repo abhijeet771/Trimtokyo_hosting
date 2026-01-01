@@ -44,13 +44,15 @@ export const loginUser = async (req, res) => {
     let redirect = "user-dashboard.html";
     if (user.role === "barber") redirect = "barber-dashboard.html";
 
-    res.json({
-      success: true,
-      message: "Login successful",
-      token: generateToken(user._id),
-      role: user.role,
-      redirect,
-    });
+  res.json({
+  success: true,
+  message: "Login successful",
+  token: generateToken(user._id),
+  role: user.role,
+  name: user.name,       
+  redirect,
+});
+
 
   } catch (error) {
     res.status(500).json({ success: false, message: "Server error" });
