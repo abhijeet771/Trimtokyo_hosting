@@ -37,6 +37,9 @@ async function registerUser(event) {
   }
 }
 
+/* ============================
+   LOGIN
+============================ */
 async function loginUser(event) {
   event.preventDefault();
 
@@ -57,8 +60,10 @@ async function loginUser(event) {
       return;
     }
 
+    // ✅ STORE AUTH DATA
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data.role);
+    localStorage.setItem("username", data.name); // 👈 FIX ADDED
 
     alert("Login successful!");
 
