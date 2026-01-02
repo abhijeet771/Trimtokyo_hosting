@@ -1,83 +1,70 @@
-const backendURL = "https://trimtokyo-hosting-1.onrender.com";
+const backendURL = "https://trimtokyo-hosting-0.onrender.com";
 
-// Load user info and bookings when page loads
+/* ============================
+   PAGE INIT (NO AUTH LOGIC)
+============================ */
 document.addEventListener("DOMContentLoaded", () => {
   const token = localStorage.getItem("token");
-  if (!token) {
-    alert("Please login first");
-    window.location.href = "login.html";
-    return;
-  }
-  fetchUserData(token);
+  if (!token) return; // auth is handled by navbar.js
+
   fetchUserBookings(token);
 });
 
-// Fetch user details
-async function fetchUserData(token) {
-  try {
-    const res = await fetch(`${backendURL}/auth/me`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    if (!res.ok) throw new Error("Failed to fetch user details");
-
-    const user = await res.json();
-    document.getElementById("userName").innerText = user.name || "User";
-    localStorage.setItem("userId", user._id);
-  } catch (err) {
-    console.error(err);
-    alert("Session expired, please login again");
-    logoutUser();
-  }
-}
-
-// Fetch user bookings
+/* ============================
+   FETCH USER BOOKINGS
+============================ */
 async function fetchUserBookings(token) {
-  const userId = localStorage.getItem("userId");
-  if (!userId) return;
-
   try {
-    const res = await fetch(`${backendURL}/bookings/user/${userId}`, {
-      headers: { Authorization: `Bearer ${token}` },
+    const res = await fetch(`${backendURL}/api/bookings/user`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
     });
 
-    if (!res.ok) throw new Error("Failed to fetch bookings");
+    const data = await res.json();
 
-    const bookings = await res.json();
     const tableBody = document.getElementById("bookingTable");
+    if (!tableBody) return;
+
     tableBody.innerHTML = "";
 
-    if (bookings.length === 0) {
-      tableBody.innerHTML = `<tr><td colspan="4" class="p-3 text-center text-gray-400">No bookings yet</td></tr>`;
+    if (!res.ok || !Array.isArray(data) || data.length === 0) {
+      tableBody.innerHTML = `
+        <tr>
+          <td colspan="4" class="p-3 text-center text-gray-400">
+            No bookings yet
+          </td>
+        </tr>
+      `;
       return;
     }
 
-    bookings.forEach((b) => {
+    data.forEach((b) => {
       const row = `
         <tr class="border-b border-white/10">
           <td class="p-3">${b.serviceType}</td>
           <td class="p-3">₹${b.amount}</td>
           <td class="p-3">${b.status}</td>
-          <td class="p-3">${b.barber ? b.barber.name : "Unassigned"}</td>
+          <td class="p-3">${b.barber?.name || "Unassigned"}</td>
         </tr>
       `;
       tableBody.insertAdjacentHTML("beforeend", row);
     });
   } catch (err) {
-    console.error(err);
+    console.error("Error loading bookings:", err);
   }
 }
 
-// Create new booking
+/* ============================
+   CREATE BOOKING
+============================ */
 async function createBooking(event) {
   event.preventDefault();
 
   const token = localStorage.getItem("token");
-  const userId = localStorage.getItem("userId");
+  if (!token) return;
 
   const bookingData = {
-    userId,
-    barberId: "", // Can be selected dynamically later
     serviceType: document.getElementById("serviceType").value.trim(),
     amount: document.getElementById("amount").value.trim(),
     paymentMethod: document.getElementById("paymentMethod").value,
@@ -85,7 +72,7 @@ async function createBooking(event) {
   };
 
   try {
-    const res = await fetch(`${backendURL}/bookings/create`, {
+    const res = await fetch(`${backendURL}/api/bookings/create`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -96,23 +83,16 @@ async function createBooking(event) {
 
     const data = await res.json();
 
-    if (res.ok) {
-      alert("Booking created successfully!");
-      fetchUserBookings(token);
-      document.getElementById("bookingForm").reset();
-    } else {
+    if (!res.ok) {
       alert(data.message || "Failed to create booking");
+      return;
     }
+
+    alert("Booking created successfully!");
+    fetchUserBookings(token);
+    document.getElementById("bookingForm")?.reset();
   } catch (err) {
-    console.error(err);
+    console.error("Booking error:", err);
     alert("Server error during booking");
   }
-}
-
-// Logout user
-function logoutUser() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("userId");
-  localStorage.removeItem("role");
-  window.location.href = "login.html";
 }

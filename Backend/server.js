@@ -6,42 +6,34 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes.js";
 import cartRoutes from "./routes/cartRoutes.js";
 import orderRoutes from "./routes/orderRoutes.js";
+import storeRoutes from "./routes/storeRoutes.js";
 
+//import adminOrderRoutes from "./routes/adminOrderRoutes.js";
+//app.use("/api/admin/order", adminOrderRoutes);
+
+
+
+// Load env
 dotenv.config();
 
+// Initialize app
 const app = express();
 
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3000",
-      "https://frontend-phi-eight-93.vercel.app"
-    ],
-    credentials: true
-  })
-);
-
+// Middlewares
+app.use(cors());
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.status(200).json({ message: "Backend is running" });
-});
-
+// Routes
+app.use("/api/stores", storeRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/order", orderRoutes);
 
-const PORT = process.env.PORT || 5000;
-
 mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => {
-    console.log("MongoDB connected");
-    app.listen(PORT, () =>
-      console.log(`Server running on port ${PORT}`)
-    );
-  })
-  .catch((err) => {
-    console.error("MongoDB connection error:", err);
-    process.exit(1);
-  });
+  .connect(process.env.MONGO_URI)  // NO extra options
+  .then(() => console.log("MongoDB connected"))
+  .catch((err) => console.log("MongoDB connection error:", err));
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

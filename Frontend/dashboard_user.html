@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>TrimTokyo | User Dashboard</title>
+
+<style>
+body{margin:0;padding:0;background:linear-gradient(to bottom,#d7fbe8 0%,#fefefe 50%,#fddde6 100%);font-family:'Roboto Slab',Arial,sans-serif;color:#000;}
+header{display:flex;justify-content:space-between;align-items:center;background:#fff;padding:15px 40px;box-shadow:0 2px 5px rgba(0,0,0,0.1);position:sticky;top:0;z-index:10;}
+.location{font-weight:600;font-size:1.1em;}
+.actions{display:flex;align-items:center;gap:15px;}
+.actions button{padding:8px 16px;border:none;border-radius:20px;background-color:#222;color:white;cursor:pointer;font-weight:bold;transition:.3s;}
+.actions button:hover{background-color:#444;}
+.section-box{background:rgba(255,255,255,.8);margin:30px auto;padding:20px;width:90%;max-width:900px;border-radius:15px;box-shadow:0 3px 8px rgba(0,0,0,.15);}
+.section-box h2{margin-bottom:15px;font-size:1.6em;text-align:center;}
+.cart-item{padding:15px;background:#fff;border-radius:12px;margin-bottom:12px;box-shadow:0 2px 5px rgba(0,0,0,.1);display:flex;justify-content:space-between;align-items:center;}
+.no-data{text-align:center;padding:20px;color:#555;font-style:italic;}
+footer{text-align:center;padding:10px;background-color:#28a99e;font-size:.9em;margin-top:40px;}
+.remove-btn{background:red;color:white;border:none;padding:6px 12px;border-radius:8px;cursor:pointer;}
+.remove-btn:hover{background:darkred;}
+#buy-now-btn{padding:10px 20px;background:#28a99e;color:white;border:none;border-radius:12px;cursor:pointer;margin-top:15px;}
+#order-animation{display:none;position:fixed;top:30%;left:50%;transform:translate(-50%,-50%);background:white;padding:25px 40px;border-radius:20px;box-shadow:0 5px 15px rgba(0,0,0,.3);font-size:1.2em;color:#28a99e;}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="location">📍 Location: Mumbai, India</div>
+  <div class="actions">
+    <button onclick="window.location.href='service.html'">Services</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<div class="section-box">
+  <h2>My Cart</h2>
+
+  <div style="text-align:center; margin-bottom:15px;">
+    <button onclick="window.location.href='service.html'"
+      style="padding:10px 22px;background:#000;color:#fff;border:none;border-radius:18px;font-weight:bold;cursor:pointer;">
+      ✂️ Book a Service
+    </button>
+  </div>
+
+  <div id="cart-list">
+    <p class="no-data">Loading your cart...</p>
+  </div>
+
+  <button id="buy-now-btn">Buy Now (COD)</button>
+</div>
+
+<footer>© Copyright TrimTokyo</footer>
+
+<div id="order-animation">✅ Your order is booked!</div>
+
+<script>
+/* ---------- LOGOUT ---------- */
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+(function () {
+  const token = localStorage.getItem("token");
+  if (!token) {
+    window.location.href = "login.html";
+    return;
+  }
+
+  async function loadCart() {
+    try {
+      const res = await fetch("https://trimtokyo-hosting-0.onrender.com/api/cart", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      const container = document.getElementById("cart-list");
+
+      if (!res.ok) {
+        container.innerHTML = `<p class="no-data">${data.message}</p>`;
+        return;
+      }
+
+      if (!data.items || data.items.length === 0) {
+        container.innerHTML = `<p class="no-data">Your cart is empty.</p>`;
+        return;
+      }
+
+      container.innerHTML = data.items.map(item => `
+        <div class="cart-item">
+          <div>
+            <strong>${item.serviceName}</strong> × ${item.quantity || 1}
+            <br/>₹${item.price}
+          </div>
+          <button class="remove-btn" onclick="removeFromCart('${item._id}')">
+            Remove
+          </button>
+        </div>
+      `).join("");
+
+    } catch (err) {
+      console.error(err);
+      document.getElementById("cart-list").innerHTML =
+        `<p class="no-data">Error loading cart.</p>`;
+    }
+  }
+
+  /* ✅ EXPOSE FUNCTION GLOBALLY */
+  window.removeFromCart = async function (cartId) {
+    try {
+      const res = await fetch(`https://trimtokyo-hosting-0.onrender.com/api/cart/${cartId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      alert(data.message);
+      loadCart();
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to remove item.");
+    }
+  };
+
+  document.getElementById("buy-now-btn").addEventListener("click", async () => {
+    try {
+      const res = await fetch("https://trimtokyo-hosting-0.onrender.com/api/order/place", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      if (!res.ok) return alert(data.message || "Order failed");
+
+      const anim = document.getElementById("order-animation");
+      anim.style.display = "block";
+
+      setTimeout(() => {
+        anim.style.display = "none";
+        loadCart();
+      }, 3000);
+
+    } catch (err) {
+      console.error(err);
+      alert("Server error while placing order");
+    }
+  });
+
+  loadCart();
+})();
+</script>
+
+</body>
+</html>
