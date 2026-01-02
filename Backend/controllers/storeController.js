@@ -1,4 +1,3 @@
-els
 
 const stores = [
   {
@@ -96,3 +95,4 @@ export const getServicesByStore = (req, res) => {
 
   res.status(200).json(storeServices);
 };
+
