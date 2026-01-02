@@ -1,4 +1,3 @@
-
 const stores = [
   {
     _id: "64a9f0c0d0c9e1a1b2c3d4e1",
@@ -95,4 +94,5 @@ export const getServicesByStore = (req, res) => {
 
   res.status(200).json(storeServices);
 };
+
 
