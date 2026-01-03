@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrimTokyo | Admin Dashboard</title>
+
+  <style>
+    body {
+      margin:0; padding:0;
+      font-family:'Roboto Slab',Arial,sans-serif;
+      background: linear-gradient(to bottom,#fefefe 0%,#d7fbe8 50%,#fddde6 100%);
+    }
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#28a99e; color:white;
+      padding:15px 40px;
+      position:sticky; top:0;
+    }
+    .actions button {
+      padding:8px 16px; border:none; border-radius:20px;
+      background:white; color:#28a99e; cursor:pointer;
+      font-weight:bold;
+    }
+    .section-box {
+      background: rgba(255,255,255,0.95);
+      margin:30px auto; padding:20px;
+      width:90%; max-width:1100px;
+      border-radius:15px;
+      box-shadow:0 3px 8px rgba(0,0,0,.15);
+    }
+    h2 { margin-bottom:15px; text-align:center; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border-bottom:1px solid #ccc; }
+    th { background:#28a99e; color:white; }
+    .approve-btn {
+      background:green; color:white;
+      border:none; padding:6px 12px;
+      border-radius:8px; cursor:pointer;
+    }
+    footer {
+      text-align:center; padding:10px;
+      background:#28a99e; color:white;
+      margin-top:40px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Admin Dashboard</h1>
+  <div class="actions">
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<!-- BARBER APPROVAL SECTION -->
+<div class="section-box">
+  <h2>Pending Barber Approvals</h2>
+  <div id="barbers-container">
+    <p>Loading barber requests...</p>
+  </div>
+</div>
+
+<!-- ORDERS SECTION -->
+<div class="section-box">
+  <h2>All Orders</h2>
+  <div id="orders-container">
+    <p>Loading orders...</p>
+  </div>
+</div>
+
+<footer>© TrimTokyo Admin Panel</footer>
+
+<script>
+const token = localStorage.getItem("token");
+if (!token) {
+  alert("Please login first!");
+  window.location.href = "login.html";
+}
+
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+/* ---------------- BARBER APPROVALS ---------------- */
+async function loadBarbers() {
+  const res = await fetch(
+    "https://trimtokyo-hosting-0.onrender.com/api/admin/barbers/pending",
+    {
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+  const data = await res.json();
+  const container = document.getElementById("barbers-container");
+
+  if (!data.barbers || data.barbers.length === 0) {
+    container.innerHTML = "<p>No pending barber requests.</p>";
+    return;
+  }
+
+  const table = document.createElement("table");
+  table.innerHTML = `
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Shop</th>
+        <th>Location</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${data.barbers.map((b, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${b.userId?.name || "N/A"}</td>
+          <td>${b.userId?.email || "N/A"}</td>
+          <td>${b.shopName}</td>
+          <td>${b.location}</td>
+          <td>
+            <button class="approve-btn"
+              onclick="approveBarber('${b._id}')">
+              Approve
+            </button>
+          </td>
+        </tr>
+      `).join("")}
+    </tbody>
+  `;
+  container.innerHTML = "";
+  container.appendChild(table);
+}
+
+async function approveBarber(id) {
+  const res = await fetch(
+    `https://trimtokyo-hosting-0.onrender.com/api/admin/barbers/${id}/approve`,
+    {
+      method: "PUT",
+      headers: { Authorization: `Bearer ${token}` }
+    }
+  );
+
+  const data = await res.json();
+  alert(data.message);
+  loadBarbers();
+}
+
+/* ---------------- LOAD ORDERS ---------------- */
+async function loadOrders() {
+  try {
+    const res = await fetch(
+      "https://trimtokyo-hosting-0.onrender.com/api/admin/order/all",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    const data = await res.json();
+    const container = document.getElementById("orders-container");
+
+    if (!data.orders || data.orders.length === 0) {
+      container.innerHTML = "<p>No orders yet.</p>";
+      return;
+    }
+
+    const table = document.createElement("table");
+    table.innerHTML = `
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>User</th>
+          <th>Barber</th>
+          <th>Items</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Time</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${data.orders.map((o, i) => `
+          <tr>
+            <td>${i + 1}</td>
+            <td>${o.userId?.name || "-"}</td>
+            <td>${o.barberId?.name || "-"}</td>
+            <td>${o.items.map(i => i.serviceName).join(", ")}</td>
+            <td>₹${o.totalAmount}</td>
+            <td>${o.status}</td>
+            <td>${new Date(o.createdAt).toLocaleString()}</td>
+          </tr>
+        `).join("")}
+      </tbody>
+    `;
+    container.innerHTML = "";
+    container.appendChild(table);
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("orders-container").innerHTML =
+      "<p>Error loading orders.</p>";
+  }
+}
+
+loadBarbers();
+loadOrders();
+</script>
+
+</body>
+</html>

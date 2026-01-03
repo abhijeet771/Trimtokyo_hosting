@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Barber Dashboard | TrimTokyo</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: linear-gradient(to bottom, #d7fbe8 0%, #fefefe 50%, #fddde6 100%);
+      font-family: 'Roboto Slab', Arial, sans-serif;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen">
+
+<!-- NAVBAR -->
+<nav class="bg-white shadow-md p-4 flex justify-between">
+  <h1 class="text-2xl font-semibold text-gray-800">TrimTokyo – Barber</h1>
+  <button onclick="logout()" class="bg-red-600 text-white px-4 py-2 rounded-lg">
+    Logout
+  </button>
+</nav>
+
+<div class="p-6 max-w-6xl mx-auto">
+
+  <!-- PROFILE NOT COMPLETED -->
+  <section id="profileFormSection" class="hidden bg-white p-6 rounded-xl shadow mb-8">
+    <h2 class="text-2xl font-bold mb-4">Complete Your Profile</h2>
+    <a href="barber-profile.html"
+       class="inline-block bg-black text-white px-6 py-2 rounded-lg">
+      Complete Profile
+    </a>
+  </section>
+
+  <!-- PENDING APPROVAL -->
+  <section id="pendingApprovalSection" class="hidden bg-yellow-100 p-6 rounded-xl shadow mb-8">
+    <h2 class="text-2xl font-bold mb-2">Profile Under Review</h2>
+    <p class="text-gray-700">
+      Your profile has been submitted and is waiting for admin approval.
+    </p>
+  </section>
+
+  <!-- MAIN DASHBOARD -->
+  <section id="dashboardSection" class="hidden">
+
+    <!-- PROFILE OVERVIEW -->
+    <div class="bg-white p-6 rounded-xl shadow mb-8">
+      <h2 class="text-2xl font-bold mb-4">Profile Overview</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <p class="text-gray-500 text-sm">Name</p>
+          <p id="barberName" class="font-semibold">—</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Email</p>
+          <p id="barberEmail" class="font-semibold">—</p>
+        </div>
+        <div>
+          <p class="text-gray-500 text-sm">Status</p>
+          <p class="font-semibold text-green-600">Approved</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- NEW BOOKINGS -->
+    <div class="bg-white p-6 rounded-xl shadow mb-8">
+      <h2 class="text-2xl font-bold mb-4">New Booking Requests</h2>
+      <div id="requestsContainer"></div>
+      <p id="noRequests" class="text-gray-500">No new booking requests.</p>
+    </div>
+
+    <!-- APPOINTMENTS -->
+    <div class="bg-white p-6 rounded-xl shadow">
+      <h2 class="text-2xl font-bold mb-4">Appointments</h2>
+      <div id="appointmentsContainer"></div>
+      <p id="noAppointments" class="text-gray-500">No appointments.</p>
+    </div>
+
+  </section>
+
+</div>
+
+<script>
+/* ---------------- AUTH ---------------- */
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+const token = localStorage.getItem("token");
+if (!token) window.location.href = "login.html";
+
+/* ---------------- LOAD PROFILE ---------------- */
+async function loadProfile() {
+  const res = await fetch("https://trimtokyo-hosting-0.onrender.com/api/barber/profile/me", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  if (!data.profile) {
+    document.getElementById("profileFormSection").classList.remove("hidden");
+    return;
+  }
+
+  if (data.profile.approvalStatus === "pending") {
+    document.getElementById("pendingApprovalSection").classList.remove("hidden");
+    return;
+  }
+
+  // APPROVED
+  document.getElementById("dashboardSection").classList.remove("hidden");
+  loadBookings();
+}
+
+/* ---------------- LOAD BOOKINGS ---------------- */
+async function loadBookings() {
+  const res = await fetch("https://trimtokyo-hosting-0.onrender.com/api/barber/bookings", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  const container = document.getElementById("requestsContainer");
+  container.innerHTML = "";
+
+  if (!data.bookings || data.bookings.length === 0) {
+    document.getElementById("noRequests").style.display = "block";
+    return;
+  }
+
+  document.getElementById("noRequests").style.display = "none";
+
+  data.bookings.forEach(b => {
+    const div = document.createElement("div");
+    div.className = "border p-4 rounded mb-2";
+    div.innerText = `${b.userId?.name || "User"} - ${b.status}`;
+    container.appendChild(div);
+  });
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>

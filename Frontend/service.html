@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>TrimTokyo | Book Your Barber</title>
+
+  <style>
+    body {
+      margin: 0; padding: 0;
+      background: linear-gradient(to bottom,#d7fbe8 0%,#fefefe 50%,#fddde6 100%);
+      font-family:'Roboto Slab',Arial,sans-serif; color:#000;
+    }
+    header {
+      display:flex; justify-content:space-between; align-items:center;
+      background:#fff; padding:15px 40px;
+      box-shadow:0 2px 5px rgba(0,0,0,0.1);
+      position:sticky; top:0; z-index:10;
+    }
+    .location{font-weight:600;font-size:1.1em;}
+    .actions button{
+      padding:8px 16px;border:none;border-radius:20px;
+      background:#222;color:white;cursor:pointer;font-weight:bold;
+    }
+    .genres{
+      display:flex;justify-content:center;flex-wrap:wrap;
+      gap:15px;padding:25px 0;background:#f9f9f9;
+    }
+    .genre{
+      background:#fff;padding:10px 20px;border-radius:20px;
+      border:1px solid #ccc;
+    }
+    .card-section{
+      display:grid;grid-template-columns:repeat(4,1fr);
+      gap:25px;padding:40px;
+    }
+    .card{
+      background:#fff;border-radius:15px;
+      box-shadow:0 2px 8px rgba(0,0,0,0.1);
+      overflow:hidden;text-align:center;
+    }
+    .card img{
+      width:100%;height:180px;object-fit:cover;
+    }
+    .card-content{padding:15px;}
+    .book-btn{
+      background:#000;color:white;border:none;
+      padding:8px 14px;border-radius:20px;cursor:pointer;
+    }
+    footer{text-align:center;padding:10px;background:#28a99e;}
+    @media(max-width:992px){.card-section{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:600px){.card-section{grid-template-columns:1fr;}}
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="location">📍 Mumbai, India</div>
+
+  <div class="actions">
+    <button onclick="window.location.href='dashboard_user.html'">Cart</button>
+    <button onclick="logout()">Logout</button>
+  </div>
+</header>
+
+<section class="genres">
+  <div class="genre">Haircut</div>
+  <div class="genre">Beard Trim</div>
+  <div class="genre">Facial</div>
+  <div class="genre">Massage</div>
+  <div class="genre">Spa</div>
+</section>
+
+<section class="card-section" id="card-section">
+  <p>Loading barbers...</p>
+</section>
+
+<footer>© TrimTokyo</footer>
+
+<script>
+/* ---------------- AUTH ---------------- */
+function logout() {
+  localStorage.removeItem("token");
+  window.location.href = "login.html";
+}
+
+/* ---------------- LOAD APPROVED BARBERS ---------------- */
+async function loadBarbers() {
+  try {
+    const res = await fetch("https://trimtokyo-hosting-0.onrender.com/api/stores");
+    const data = await res.json();
+
+    const container = document.getElementById("card-section");
+    container.innerHTML = "";
+
+    if (!data.stores || data.stores.length === 0) {
+      container.innerHTML = "<p>No barbers available.</p>";
+      return;
+    }
+
+    data.stores.forEach(store => {
+      const card = document.createElement("div");
+      card.className = "card";
+
+      card.innerHTML = `
+        <img src="https://picsum.photos/seed/${store._id}/600/400" />
+        <div class="card-content">
+          <h3>${store.name}</h3>
+          <p>${store.location}</p>
+          <button class="book-btn"
+            onclick="openStore('${store._id}')">
+            Book Now
+          </button>
+        </div>
+      `;
+
+      container.appendChild(card);
+    });
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("card-section").innerHTML =
+      "<p>Error loading barbers.</p>";
+  }
+}
+
+function openStore(storeId) {
+  window.location.href = `service-details.html?storeId=${storeId}`;
+}
+
+loadBarbers();
+</script>
+
+
+</body>
+</html>

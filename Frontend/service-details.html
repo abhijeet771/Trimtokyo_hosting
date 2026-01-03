@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Store Services | TrimTokyo</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Roboto Slab', Arial, sans-serif;
+      background: linear-gradient(to bottom,#d7fbe8 0%,#fefefe 50%,#fddde6 100%);
+    }
+
+    header {
+      background: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 30px auto;
+      padding: 20px;
+    }
+
+    .service-card {
+      background: white;
+      padding: 18px;
+      border-radius: 14px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    button {
+      background: black;
+      color: white;
+      border: none;
+      padding: 8px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h2 id="storeName">Loading...</h2>
+  <button onclick="window.location.href='dashboard_user.html'">
+    Go to Cart
+  </button>
+</header>
+
+<div class="container" id="servicesContainer">
+  <p>Loading services...</p>
+</div>
+
+<script>
+const token = localStorage.getItem("token");
+if (!token) {
+  alert("Please login first");
+  window.location.href = "login.html";
+}
+
+const params = new URLSearchParams(window.location.search);
+const storeId = params.get("storeId");
+
+async function loadStore() {
+  const res = await fetch(`https://trimtokyo-hosting-0.onrender.com/api/stores/${storeId}`);
+  const data = await res.json();
+  document.getElementById("storeName").innerText = data.name || "Store";
+}
+
+async function loadServices() {
+  const res = await fetch(`https://trimtokyo-hosting-0.onrender.com/api/stores/${storeId}/services`);
+  const services = await res.json();
+
+  const container = document.getElementById("servicesContainer");
+  container.innerHTML = "";
+
+  services.forEach(service => {
+    const div = document.createElement("div");
+    div.className = "service-card";
+
+    div.innerHTML = `
+      <div>
+        <strong>${service.name}</strong><br/>
+        ₹${service.price}
+      </div>
+      <button onclick="addToCart(
+        '${service._id}',
+        '${service.name}',
+        ${service.price}
+      )">
+        Add to Cart
+      </button>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+async function addToCart(serviceId, serviceName, price) {
+  try {
+    const res = await fetch("https://trimtokyo-hosting-0.onrender.com/api/cart/add", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        serviceId: String(serviceId),
+        serviceName: serviceName,
+        price: Number(price)
+      })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert(data.message || "Failed to add to cart");
+      return;
+    }
+
+    alert("Service added to cart");
+
+  } catch (err) {
+    console.error(err);
+    alert("Server error while adding to cart");
+  }
+}
+
+loadStore();
+loadServices();
+</script>
+
+</body>
+</html>

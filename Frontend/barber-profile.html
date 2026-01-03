@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Complete Barber Profile | TrimTokyo</title>
+
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto Slab', Arial, sans-serif;
+      background: linear-gradient(to bottom,#d7fbe8 0%,#fefefe 50%,#fddde6 100%);
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 50px auto;
+      background: #fff;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-top: 15px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
+      margin-top: 6px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      outline: none;
+    }
+
+    .service-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .service-box input {
+      flex: 1;
+    }
+
+    .add-service-btn {
+      background: #000;
+      color: white;
+      border: none;
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    .services-list {
+      margin-top: 15px;
+    }
+
+    .service-chip {
+      background: #f1f1f1;
+      padding: 8px 12px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      margin: 6px;
+      font-size: 14px;
+    }
+
+    .remove {
+      margin-left: 10px;
+      cursor: pointer;
+      color: red;
+      font-weight: bold;
+    }
+
+    .submit-btn {
+      width: 100%;
+      margin-top: 25px;
+      background: #28a99e;
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+  <h2>Complete Your Barber Profile</h2>
+
+  <form id="profileForm">
+    <label>Shop Name</label>
+    <input id="shopName" required />
+
+    <label>Location</label>
+    <input id="location" required />
+
+    <label>Phone</label>
+    <input id="phone" required />
+
+    <label>Add Services</label>
+    <div class="service-box">
+      <input id="serviceName" placeholder="Service name (e.g. Haircut)" />
+      <input id="servicePrice" placeholder="Price (₹)" type="number" />
+      <button type="button" class="add-service-btn" onclick="addService()">
+        Add
+      </button>
+    </div>
+
+    <div class="services-list" id="servicesList"></div>
+
+    <button class="submit-btn" type="submit">
+      Submit for Approval
+    </button>
+  </form>
+</div>
+
+<script src="js/barber-profile.js"></script>
+</body>
+</html>
