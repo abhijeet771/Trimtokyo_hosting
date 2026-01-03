@@ -1,5 +1,4 @@
 import BarberProfile from "../models/BarberProfile.js";
-import User from "../models/User.js";
 
 /* =========================
    GET APPROVED STORES
@@ -7,26 +6,30 @@ import User from "../models/User.js";
 ========================= */
 export const getApprovedStores = async (req, res) => {
   try {
-    const stores = await BarberProfile.find({
+    const barbers = await BarberProfile.find({
       approvalStatus: "approved"
     })
       .populate("userId", "name")
-      .select("shopName location services userId");
+      .select("shopName location userId");
+
+    const stores = barbers.map(b => ({
+      _id: b._id,
+      shopName: b.shopName,
+      location: b.location,
+      barberName: b.userId?.name || "Barber",
+      image: `https://picsum.photos/seed/${b._id}/600/400`
+    }));
 
     res.status(200).json({
       success: true,
-      stores: stores.map(s => ({
-        _id: s._id,
-        name: s.shopName,
-        location: s.location,
-        barberName: s.userId.name
-      }))
+      stores
     });
 
   } catch (error) {
+    console.error("GET APPROVED STORES ERROR:", error);
     res.status(500).json({
       success: false,
-      message: error.message
+      message: "Failed to load stores"
     });
   }
 };
@@ -43,18 +46,26 @@ export const getStoreById = async (req, res) => {
     }).populate("userId", "name email");
 
     if (!store) {
-      return res.status(404).json({ message: "Store not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Store not found"
+      });
     }
 
     res.json({
       _id: store._id,
-      name: store.shopName,
+      shopName: store.shopName,
       location: store.location,
-      barberName: store.userId.name
+      barberName: store.userId?.name || "Barber",
+      image: `https://picsum.photos/seed/${store._id}/600/400`
     });
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("GET STORE BY ID ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
 
@@ -67,15 +78,22 @@ export const getServicesByStore = async (req, res) => {
     const store = await BarberProfile.findOne({
       _id: req.params.storeId,
       approvalStatus: "approved"
-    });
+    }).select("services");
 
     if (!store) {
-      return res.status(404).json({ message: "Store not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Store not found"
+      });
     }
 
-    res.json(store.services || []);
+    res.status(200).json(store.services || []);
 
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error("GET SERVICES ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
